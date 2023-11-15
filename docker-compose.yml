@@ -1,0 +1,39 @@
+version: '3.7'
+
+services:
+  nodeserver:
+    build:
+      context: ./app
+    depends_on:
+      - db
+    networks:
+      - node-desafio_node-desafio_default
+
+  db:
+    build:
+      context: ./mysql-setup
+    container_name: db-node
+    restart: always
+    tty: true
+    volumes:
+      - ./mysql:/var/lib/mysql #este volume serve para fazer um backup, porque uma vez que o container de mysql vá abaixo, ele recupera os dados que estamos a guardar TAMBÉM localmente
+    environment:
+      - MYSQL_DATABASE=nodedb
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - node-desafio_node-desafio_default
+
+  nginx:
+    restart: always
+    build:
+      context: ./nginx
+    ports:
+      - '8080:80'
+    depends_on:
+      - nodeserver
+    networks:
+      - node-desafio_node-desafio_default
+
+networks:
+  node-desafio_node-desafio_default:
+    driver: bridge
